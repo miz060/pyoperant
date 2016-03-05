@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PyOperant by gentnerlab</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>PyOperant</h1>
+        <p>python package for operant conditioning</p>
+
+        <p class="view"><a href="https://github.com/gentnerlab/pyoperant">View the Project on GitHub <small>gentnerlab/pyoperant</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/gentnerlab/pyoperant/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/gentnerlab/pyoperant/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/gentnerlab/pyoperant">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>PyOperant is a framework to easily construct and share new operant behavior paradigms.</p>
+
+<p>With PyOperant, you can write a single behavior script that works across different species, different computers, different hardware, different rewards, different modalities.</p>
+
+<p>Operant logic is easy.</p>
+
+<ol>
+<li>Present a stimulus</li>
+<li>Get the subject’s response</li>
+<li>If the response matches the stimulus, then reward the subject</li>
+</ol>
+
+<p>Writing operant protocols should be easy, but in practice...</p>
+
+<p>Error checking, data storage, and machine-specific hardware interactions often obfuscate the simplicity of the task, limiting its flexibility and power. This limitation becomes increasingly apparent when deploying high-throughput behavioral experiment control systems, transferring subjects from a training panel to an electrophysiology panel, or simply trying to share behavioral protocols. </p>
+
+<p>PyOperant deals with these challenges by providing a cross-platform object-oriented framework to easily construct, conveniently share, and rapidly iterate on new operant behavior paradigms.</p>
+
+<ol>
+<li>Abstract physical component manipulation from low-level hardware manipulation</li>
+<li>Define behavioral protocols as classes which can be extended through object inheritance</li>
+</ol>
+
+<p>Further, experimenters are able to integrate their behavioral protocols with other Python packages for online data analysis or experimental control. We currently use pyoperant in the Gentner Lab to control 36 operant panels.</p>
+
+<h1>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation</h1>
+
+<p>PyOperant abstracts behavioral protocol logic from hardware interactions through a machine-specific configuration file. In the local.py configuration file, the experimenter defines the operant panels available for use. A Panel consists of a collection of Component objects and a set of standard methods to manipulate the Component. These Component objects are mirrors of their physical counterparts, such as a food hopper, response port, speaker, or house light.</p>
+
+<p>Behavioral protocols can be modifed and extended through object inheritance. The modular architecture of PyOperant also allows experimenters to integrate their behavioral protocols with other Python packages for online data analysis or experimental control.</p>
+
+<p>PyOperant’s hardware support currently includes PortAudio &amp; Comedi. Future support will include NiDAQmx and Cambridge Electronic Designs.</p>
+
+<p><a href="http://pyoperant.readthedocs.org/en/dev/index.html">http://pyoperant.readthedocs.org/en/dev/index.html</a></p>
+
+<h1>
+<a id="architecture" class="anchor" href="#architecture" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Architecture</h1>
+
+<h2>
+<a id="behaviors" class="anchor" href="#behaviors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Behaviors</h2>
+
+<p>Behaviors are Python classes which run the operant experiment. They associate the subject with the hardware panel the subject is interacting with and save experimental data appropriately. They are instantiated with various experimental parameters, such as stimulus identities and associations, block designs, and reinforcement schedules.</p>
+
+<p>There are a couple of built-in behaviors: TwoAltChoice, which runs two alternative choice tasks and Lights, which simply turns the house light on and off according to a schedule. These can be inherited to change specific methods without changing the rest of the behavioral protocol.</p>
+
+<h2>
+<a id="panels" class="anchor" href="#panels" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Panels</h2>
+
+<p>Panels are the highest level of hardware abstraction. They maintain panel components as attributes and have standard methods for resetting and testing the panel. Many Behaviors rely on specific panel components and methods to be present. </p>
+
+<p>Panels are defined by the experimenter locally.</p>
+
+<h2>
+<a id="components" class="anchor" href="#components" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Components</h2>
+
+<p>Components are common hardware components, such as a Hopper, a ResponsePort, a HouseLight, or an RGBLight. Many components rely on multiple hardware IO channels. For example, a Hopper requires both a solenoid (to activate the Hopper) and an IR beam detector (to check if the Hopper is raised). Calling the ‘feed’ method on a Hopper checks to make sure that the hopper is down, raises the hopper, checks to make sure the hopper raised, waits the appropriate length of time, then lowers the hopper, finally checking one more time to make sure the hopper dropped. If there is an incongruity between the status of the solenoid and the IR beam, the Hopper component raises the appropriate error, which the Behavior script can deal with appropriately.</p>
+
+<h2>
+<a id="hardware-io-classes" class="anchor" href="#hardware-io-classes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Hardware IO Classes</h2>
+
+<p>Hawdware IO classes standardize inputs and outputs that are available for Components and Panels to use.</p>
+
+<h2>
+<a id="hardware-interfaces" class="anchor" href="#hardware-interfaces" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Hardware interfaces</h2>
+
+<p>Hardware interfaces are wrappers around hardware drivers and APIs that allow hardware IO classes to work.</p>
+
+<h1>
+<a id="developers" class="anchor" href="#developers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Developers</h1>
+
+<p>Justin Kiggins &amp; Marvin Thielk</p>
+
+<p>Gentner Lab - <a href="http://gentnerlab.ucsd.edu">http://gentnerlab.ucsd.edu</a></p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/gentnerlab">gentnerlab</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
