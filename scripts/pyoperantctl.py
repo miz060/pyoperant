@@ -1,8 +1,7 @@
 # a line to line python translation of the pyoperant script
 # still in progress
 # by Mingcheng Zhu, miz060
-import re
-
+import re 
 numBoxes = 16
 
 opdatdir = "/home/bird/opdat"
