@@ -11,7 +11,7 @@ filename = "${opdatdir}panel_subject_behavior"
 
 # trim function is defined in python as strip()
 
-def readfile(filename_in, numBoxes_in){
+def readfile(filename_in, numBoxes_in):
   filename = filename_in
   numBoxes = numBoxes_in
 
@@ -33,37 +33,35 @@ def readfile(filename_in, numBoxes_in){
     line = lines[j].strip()
 
     if re.match(r"^\#", line):
-      #print("ignoring a comment line\n")
+      print("ignoring a comment line\n")
     elif re.search(r"\S+", line):
       fields = re.compile(r"\s+").rsplit(line, 5)
-        if len(fields)==5:
-          if(fields[0]>0 and fields[0]<=numBoxes):
-            if(boxdone[fields[0] - 1] == 0):
-              boxdone[fields[0] - 1] = 1
+      if len(fields)== 5:
+        if(fields[0]>0 and fields[0]<=numBoxes):
+          if(boxdone[fields[0] - 1] == 0):
+            boxdone[fields[0] - 1] = 1
                 
-              f = 0
-              for str in fields:
+            f = 0
+            for str in fields:
                 
-                current = str.strip()
-                while re.search(r"<(\d+)>", current) \
-                  and re.findall(r"<(\d+)>", current)[0] > 0 \
-                  and re.findall(r"<(\d+)>", current)[0] <= f:
-                  # print ("\n $s matched for $d\n", current, re.findall(r"<(\d+)>",current))
-                  # current = ~ s/<(\d+)>/$fixed[$realLineNumNum][match_1-1]
-                  current.replace(r"<(\d+)>", fixed[realLineNum][re.findall(r"<(\d+)>", current[0])-1])
-                fixed[realLineNum[f] = current
-                # print ("fixed[realLineNum[f] \t")
-                f += 1
-              print ("\n")
-              realLineNum += 1
+              current = str.strip()
+              while re.search(r"<(\d+)>", current) \
+                and re.findall(r"<(\d+)>", current)[0] > 0 \
+                and re.findall(r"<(\d+)>", current)[0] <= f:
+                # print ("\n $s matched for $d\n", current, re.findall(r"<(\d+)>",current))
+                # current = ~ s/<(\d+)>/$fixed[$realLineNumNum][match_1-1]
+                current.replace(r"<(\d+)>", fixed[realLineNum][re.findall(r"<(\d+)>", current[0])-1])
+              fixed[realLineNum][f] = current
+              # print ("fixed[realLineNum[f] \t")
+              f += 1
+            #print ("\n")
+            realLineNum += 1
 
-            else:
-              print("ignoring an additional line for box %d in the file %s\n", fields[0], filename)
           else:
-            print("ignoring a line for box %d in the file %s", fields[0], filename)
+            print("ignoring an additional line for box %d in the file %s\n", fields[0], filename)
         else:
           print("ignoring a line for box %d in the file %s because it is less than 0 or bigger than %d \n"\
-           , fields[0], filename, numBoxes)
+            , fields[0], filename, numBoxes)
       else:
         print("ignoring a line in the file %s that contains something other than 5 columns")
     else:
