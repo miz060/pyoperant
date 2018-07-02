@@ -3,6 +3,7 @@
 # by Mingcheng Zhu, miz060
 import re
 import subprocess
+import datetime
 numBoxes = 16
 
 opdatdir = "/home/bird/opdat"
@@ -126,8 +127,9 @@ def main():
   while len(processes)>0:
     ps = process.pop()
     info = re.compile(" ").rsplit(ps, 11)
-    #chop($info[10]);
-    #$info[10] =~ s/^(.*\/python .*\/bin\/)//;
+    info[10] = info[10][:-1]
+    #info[10].replace(r"^(.*\/python", ".*\/bin\/)"
+    current.replace(r"<(\d+)>", fixed[realLineNum][re.findall(r"<(\d+)>", current[0])-1])
     #$info[10] =~ s/^(\/usr\/local\/anaconda\/bin\/python \/usr\/local\/anaconda\/bin\/)//;
     #$info[10] =~ s/^(\/usr\/local\/anaconda\/bin\/python \/usr\/local\/anaconda\/bin\/)//;
     print("s\n", info[10])
@@ -135,10 +137,10 @@ def main():
         pspieces = info[10].split(" ")
         j = 0 
 	while len(pspieces) > j:
-	  #if $pspieces[$j] eq "-P":
-            #$boxNum = $pspieces[1 + $j]
-          #elif $pspieces[$j] eq "-S":
-	    #$birdID = $pspieces[1 + $j]
+	  if pspieces[j] == "-P":
+            boxNum = pspieces[1 + j]
+          elif pspieces[j] == "-S":
+	    birdID = pspieces[1 + j]
 	  j+=1
 	indProcesses[i] = info[10]
 	indBoxes[i] = boxNum
@@ -155,3 +157,126 @@ def main():
     birdid[i] = 0
     i+=1
 
+  currentDT = datetime.datetime.now()
+  print(str(currentDT))
+
+  for i in range(len(data)):
+    fields[i] = data[i]
+   
+    if fields[1] != '1':
+      print("box %d disabled\n", fields[0])
+
+    boxCorrect[fields[0] -1] = 0
+    if shouldKillAll | fields[1] != '1':
+      correctProgram[fields[0] - 1] = "NONE"
+    else: 
+      correctProgram[fields[0] - 1] = fields[4]
+    directory[fields[0] -1] = fields[3]
+    birdid[fields[0] - 1] = fields[2]
+
+    i=0
+    while len(indProcesses)>i:
+      if indBoxes[i]==fields[0]:
+        #if($indProcesses[$i] eq $fields[3]){
+	  if checkoptions(indProcesses[i], correctProgram[fields[0] - 1]):
+            if indStatuses[i] == "SL" | indStatuses[i] == "RL":
+	      if boxCorrect[fields[0] - 1]== 0:
+                print("box %d correctly running %d\n", fields[0], indProcesses[i])
+                boxCorrect[fields[0] - 1]= 1;
+	      else:
+                print("box %d INCORRECTLY running duplicate copy of %d you should kill one of them\n", fields[0], indProcesses[i])
+	    elif (indStatuses[i] == "Ss"):
+              print("box %d found running session leader process %d\n", fields[0], indIDs[i])
+	    else:
+              print("box %d running correct process %d but with status %d you should investigate %d\n", \
+                fields[0], indProcesses[i], indStatuses[i], indIDs[i])
+	      boxCorrect[fields[0] - 1]=1
+          else:
+            if indStatuses[i] == "Ss":
+              print("box %d running session leader process %d\n", fields[0], indIDs[i])
+	    else:
+              print("box %d INCORRECTLY running %d should kill %d\n", fields[0], indProcesses[i], indIDs[i])
+              killID = indBirdIDs[i]
+              #killLog = opdatdir."B".$killID."/B".$killID."_log.txt";
+              print("log directory is killLog\n")
+              if shouldKillProcesses:
+                print("attempting to kill $indProcesses[$i] ($indIDs[$i])\n")
+                #system "kill $indIDs[$i]";
+                #system "cd $directory[$i]; echo '".$date.": ".$killstring." killing $indProcesses[$i]' >> $opdatdir"."B".$birdid[$i]."/B".$birdid[$i]."_log.txt";
+                #system "echo '".$date.": killing $indProcesses[$i] :: $killstring' >> $killLog"
+    i += 1
+
+  i=0;
+  while i < numBoxes:
+    if boxCorrect[i]==0:
+      if correctProgram[i] == "NONE":
+        print("box %d correctly running no program (assuming processes suggested above were killed)\n", i+1)
+      else:
+        print("box %d needs to start %s in directory %s\n", \
+          i+1, correctProgram[i], directory[i])
+	    
+        if shouldStartProcesses:
+          print("attempting to start %s in %s\n", correctProgram[i], directory[i])
+          #system "cd $directory[$i]; echo '".$date.": starting $correctProgram[$i]' >> $opdatdir"."B".$birdid[$i]."/B".$birdid[$i]."_log.txt; $correctProgram[$i] &";
+    elif boxCorrect[i] == -1:
+      print("box %d has no line in file %s\n", i+1, filename)
+    elif boxCorrect[i] == 1:
+      print("box %d needs no change\n", i+1)
+    else:
+      print("box %d had some problem that should never happen\n", i+1)
+  i += 1
+
+
+#sub checkoptions(@) {
+#	($s1,$s2)=@_;
+#
+#	$s1=trim($s1);
+#	$s2=trim($s2);
+#	if($s1=~s/^(\S*)// && $s2=~s/^$1//){
+#		$s1=trim($s1);
+#		$s2=trim($s2);
+#		if($s1=~s/(\S*)$// && $s2=~s/$1$//){
+#			$s1=trim($s1);
+#			$s2=trim($s2);
+#			@s1=split("-",$s1);
+#			@s2=split("-",$s2);
+#			#print "'".$s1."'"."\t"."'".$s2."'"."\n";
+#			@redo=@s2;
+#			foreach $o(@s1){
+#				@s2=@redo;
+#				$o=trim($o);
+#				$match=0;
+#				$n=0;
+#				@redo=();
+#				foreach $m(@s2){
+#					$m=trim($m);
+#					#print "'".$m."'"."\t"."'".$o."'"."\n";
+#					if($m=~/^(\S*)\s*(\S*)$/ && $o=~/^$1\s*$2$/){
+#						$match=1;
+#					} else {
+#						$redo[$n]=$m;
+#						$n++;
+#					}
+#				}
+#				if($match){
+#				} else {
+#					#print "no match for option\n";
+#					return 0;
+#				}
+#			}
+#			if(scalar(@redo)==0){
+#				#success!
+#				return 1;
+#			} else {
+#				#print "leftover options\n";
+#				return 0;
+#			}
+#		} else {
+#			#print "not same stimfile\n";
+#			return 0;
+#		}
+#	} else {
+#		#print "not same program\n";
+#		return 0;
+#	}
+#}
